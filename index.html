@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>监考时钟基础版2.7</title>
+    <title>监考时钟基础版2.8</title>
     <style>
         * {
             margin: 0;
@@ -341,6 +341,19 @@
             background: #ccc;
         }
     
+    
+        .subject-toggle {
+            font-size: 2rem;
+            color: #999;
+            cursor: pointer;
+            white-space: nowrap;
+            user-select: none;
+            margin-left: 0.5rem;
+        }
+        .subject-toggle:hover {
+            color: #555;
+        }
+
     </style>
 </head>
 <body>
@@ -373,6 +386,7 @@
                 <option value="物化">物化</option>
                 <option value="政史">政史</option>
             </select>
+            <span class="subject-toggle" id="subject-toggle" title="切换为手动输入">✎</span>
         </div>
         <div class="item"><span class="label">考试时间：</span>
             <select class="time-digit" id="start-h1"><option value="0" selected>0</option><option value="1">1</option><option value="2">2</option></select>
@@ -615,6 +629,33 @@
 
             updateClock();
             setInterval(updateClock, 1000);
+            // 科目输入方式切换
+            var examSubjectMode = 'select';
+            
+            function getSubjectHTML(mode) {
+                if (mode === 'select') {
+                    return '<span class="label">考试科目：</span><select><option value="" disabled selected>请点击选择</option><option value="语文">语文</option><option value="数学">数学</option><option value="外语">外语</option><option value="物理">物理</option><option value="化学">化学</option><option value="生物">生物</option><option value="政治">政治</option><option value="历史">历史</option><option value="地理">地理</option><option value="科学">科学</option><option value="道法">道法</option><option value="地生">地生</option><option value="物化">物化</option><option value="政史">政史</option></select><span class="subject-toggle" id="subject-toggle"> &#9998;</span>';
+                } else {
+                    return '<span class="label">考试科目：</span><input type="text" placeholder="请输入科目" style="font-size:5.2rem;font-weight:300;font-family:inherit;border:none;border-bottom:0.2rem solid #ccc;background:transparent;color:#333;outline:none;padding:0.4rem 0;width:100%;max-width:30rem;"><span class="subject-toggle" id="subject-toggle"> &#9660;</span>';
+                }
+            }
+            
+            function bindSubjectToggle() {
+                var btn = document.getElementById('subject-toggle');
+                if (btn) {
+                    btn.addEventListener('click', function() {
+                        var item = document.querySelector('.exam-info .item:first-child');
+                        if (!item) return;
+                        examSubjectMode = (examSubjectMode === 'select') ? 'input' : 'select';
+                        item.innerHTML = getSubjectHTML(examSubjectMode);
+                        bindSubjectToggle();
+                        if (examStarted) lockInputs(true);
+                    });
+                }
+            }
+            
+            bindSubjectToggle();
+
             // 全局音量控制
             window.globalVolume = 0.5;
             window.setVol = function(val) {
